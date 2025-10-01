@@ -163,7 +163,39 @@ btnTransfer.addEventListener('click', e => {
     updateUI(currentAccount);
   }
 });
+btnClose.addEventListener('click', e => {
+  e.preventDefault();
 
+  const closeAccountUsername = inputCloseUsername.value;
+  const closeAccountPin = Number(inputClosePin.value);
+
+  if (
+    closeAccountUsername === currentAccount.username &&
+    closeAccountPin === currentAccount.pin
+  ) {
+    const index = accounts.findIndex(
+      acc => acc.username === closeAccountUsername
+    );
+
+    accounts.splice(index, 1);
+    containerApp.style.opacity = 0;
+  }
+});
+btnLoan.addEventListener('click', e => {
+  e.preventDefault();
+
+  const amount = inputLoanAmount.value;
+
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount / 10)) {
+    // Add movement
+    currentAccount.movements.push(amount);
+
+    // Update UI
+    updateUI(currentAccount);
+  }
+
+  inputLoanAmount.value = '';
+});
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
