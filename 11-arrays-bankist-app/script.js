@@ -146,7 +146,7 @@ calcDisplaySummary(account1.movements);
 // createUserNames(accounts);
 
 ///////////////////////////////////////
-// Coding Challenge #2
+// Coding Challenge #2 and #3
 
 /* 
 Let's go back to Julia and Kate's study about dogs. This time, they want to convert dog ages to human ages and calculate the average age of the dogs in their study.
