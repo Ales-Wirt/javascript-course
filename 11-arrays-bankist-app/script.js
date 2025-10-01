@@ -63,7 +63,6 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 const displayMovements = function (movements) {
   containerMovements.innerHTML = '';
-
   movements.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
@@ -78,9 +77,15 @@ const displayMovements = function (movements) {
     containerMovements.insertAdjacentHTML('afterbegin', html);
   });
 };
-
-displayMovements(account1.movements);
-
+const createUserNames = accounts =>
+  accounts.forEach(
+    account =>
+      (account.username = account.owner
+        .toLowerCase()
+        .split(' ')
+        .map(name => name[0])
+        .join(''))
+  );
 const calculateBalance = movements => {
   const balance = movements.reduce(
     (account, movement) => account + movement,
@@ -88,62 +93,83 @@ const calculateBalance = movements => {
   );
   labelBalance.textContent = `${balance} EUR`;
 };
-calculateBalance(account1.movements);
-
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// LECTURES
-
-const currencies = new Map([
-  ['USD', 'United States dollar'],
-  ['EUR', 'Euro'],
-  ['GBP', 'Pound sterling'],
-]);
-
-const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
-// Maximum value
-const max = movements.reduce((acc, mov) => {
-  if (acc > mov) {
-    return acc;
-  } else {
-    return mov;
-  }
-}, movements[0]);
-const calcDisplayBalance = movements => {
-  const balance = movements.reduce((acc, cur) => acc + cur, 0);
-  labelBalance.textContent = `${balance}€`;
-};
-const calcDisplaySummary = movements => {
-  const incomes = movements
+const calculateSummary = account => {
+  const incomes = account.movements
     .filter(mov => mov > 0)
     .reduce((acc, cur) => acc + cur, 0);
   labelSumIn.textContent = `${incomes}€`;
 
-  const outcome = movements
+  const outcome = account.movements
     .filter(mov => mov < 0)
     .reduce((acc, cur) => acc + cur, 0);
   labelSumOut.textContent = `${Math.abs(outcome)}€`;
 
-  const interest = movements
+  const interest = account.movements
     .filter(mov => mov > 0)
-    .map(deposit => (deposit * 1.2) / 100)
+    .map(deposit => (deposit * account.interestRate) / 100)
     .filter((int, i, arr) => int >= 1)
     .reduce((acc, cur) => acc + cur, 0);
 
   labelSumInterest.textContent = `${interest}€`;
 };
-calcDisplaySummary(account1.movements);
+
+createUserNames(accounts);
+
+// Event handler
+let currentAccount;
+btnLogin.addEventListener('click', e => {
+  e.preventDefault();
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
+
+  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+    // Display UI and message
+    labelWelcome.textContent = `Welcome back, ${
+      currentAccount.owner.split(' ')[0]
+    }`;
+    containerApp.style.opacity = 100;
+
+    // Clear input fields
+    inputLoginUsername.value = inputLoginPin.value = '';
+    inputLoginPin.blur();
+    // Display movements
+    displayMovements(currentAccount.movements);
+
+    // Display balance
+    calculateBalance(currentAccount.movements);
+
+    // Display summary
+    calculateSummary(currentAccount);
+  }
+});
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+// LECTURES
+
+// const currencies = new Map([
+//   ['USD', 'United States dollar'],
+//   ['EUR', 'Euro'],
+//   ['GBP', 'Pound sterling'],
+// ]);
+
+// const movements = [200, 450, -400, 3000, -650, -130, 70, 1300];
+// // Maximum value
+// const max = movements.reduce((acc, mov) => {
+//   if (acc > mov) {
+//     return acc;
+//   } else {
+//     return mov;
+//   }
+// }, movements[0]);
+// const calcDisplayBalance = movements => {
+//   const balance = movements.reduce((acc, cur) => acc + cur, 0);
+//   labelBalance.textContent = `${balance}€`;
+// };
+
+// calcDisplaySummary(account1.movements);
 // const user = 'Steven Thomas Williams';
-// const createUserNames = accounts =>
-//   accounts.forEach(
-//     account =>
-//       (account.userName = account.owner
-//         .toLowerCase()
-//         .split(' ')
-//         .map(name => name[0])
-//         .join(''))
-//   );
-// createUserNames(accounts);
 
 ///////////////////////////////////////
 // Coding Challenge #2 and #3
