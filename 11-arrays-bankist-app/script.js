@@ -10,6 +10,7 @@ const account1 = {
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
+  type: 'premium',
 };
 
 const account2 = {
@@ -17,6 +18,7 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
+  type: 'standard',
 };
 
 const account3 = {
@@ -24,6 +26,7 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
+  type: 'premium',
 };
 
 const account4 = {
@@ -31,6 +34,7 @@ const account4 = {
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
   pin: 4444,
+  type: 'basic',
 };
 
 const accounts = [account1, account2, account3, account4];
@@ -61,9 +65,14 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements = function (movements) {
+const displayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = '';
-  movements.forEach(function (mov, i) {
+
+  const sortedMovements = sort
+    ? movements.slice().sort((a, b) => a - b)
+    : movements;
+
+  sortedMovements.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const html = `
       <div class="movements__row">
@@ -122,6 +131,8 @@ createUserNames(accounts);
 
 // Event handlers
 let currentAccount;
+let isSorted = false;
+
 btnLogin.addEventListener('click', e => {
   e.preventDefault();
   currentAccount = accounts.find(
@@ -196,6 +207,11 @@ btnLoan.addEventListener('click', e => {
 
   inputLoanAmount.value = '';
 });
+btnSort.addEventListener('click', e => {
+  e.preventDefault();
+  displayMovements(currentAccount.movements, !isSorted);
+  isSorted = !isSorted;
+});
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
@@ -250,6 +266,163 @@ btnLoan.addEventListener('click', e => {
 //         .join(''))
 //   );
 // createUserNames(accounts);
+// const groupedAccounts = Object.groupBy(accounts, account => account.type);
+// console.log(groupedAccounts);
+// const movementsUI = Array.from(document.querySelectorAll('.movements__value'));
+// console.log(movementsUI);
+// labelBalance.addEventListener('click', () => {
+//   const movementsUI = Array.from(
+//     document.querySelectorAll('.movements__value'),
+//     el => Number(el.textContent.replace('€', ''))
+//   );
+//   console.log(movementsUI);
+// });
+const { deposits, withdrawals } = accounts
+  .flatMap(account => account.movements)
+  .reduce(
+    (sums, cur) => {
+      sums['deposits'] += cur;
+      return sums;
+    },
+    { deposits: 0, withdrawals: 0 }
+  );
+
+const convertTitleCase = title => {
+  const capitalize = str => str[0].toUpperCase() + str.slice(1);
+
+  const exceptions = ['a', 'an', 'and', 'the', 'but', 'or', 'on', 'in', 'with'];
+  const titleCase = title
+    .toLowerCase()
+    .split(' ')
+    .map(word => (exceptions.includes(word) ? word : capitalize(word)))
+    .join(' ');
+
+  return capitalize(titleCase);
+};
+console.log(convertTitleCase('this is a new title for practise'));
+console.log(convertTitleCase('second title and the third is comming'));
+console.log(convertTitleCase('development town hall meeting'));
+///////////////////////////////////////
+// Coding Challenge #5
+
+/* 
+Julia and Kate are still studying dogs. This time they are want to figure out if the dogs in their are eating too much or too little food.
+
+- Formula for calculating recommended food portion: recommendedFood = weight ** 0.75 * 28. (The result is in grams of food, and the weight needs to be in kg)
+- Eating too much means the dog's current food portion is larger than the recommended portion, and eating too little is the opposite.
+- Eating an okay amount means the dog's current food portion is within a range 10% above and below the recommended portion (see hint).
+
+YOUR TASKS:
+1. Loop over the array containing dog objects, and for each dog, calculate the recommended food portion (recFood) and add it to the object as a new property. Do NOT create a new array, simply loop over the array (We never did this before, so think about how you can do this without creating a new array).
+2. Find Sarah's dog and log to the console whether it's eating too much or too little. HINT: Some dogs have multiple users, so you first need to find Sarah in the owners array, and so this one is a bit tricky (on purpose) 🤓
+3. Create an array containing all owners of dogs who eat too much (ownersTooMuch) and an array with all owners of dogs who eat too little (ownersTooLittle).
+4. Log a string to the console for each array created in 3., like this: "Matilda and Alice and Bob's dogs eat too much!" and "Sarah and John and Michael's dogs eat too little!"
+5. Log to the console whether there is ANY dog eating EXACTLY the amount of food that is recommended (just true or false)
+6. Log to the console whether ALL of the dogs are eating an OKAY amount of food (just true or false)
+7. Create an array containing the dogs that are eating an OKAY amount of food (try to reuse the condition used in 6.)
+8. Group the dogs into the following 3 groups: 'exact', 'too-much' and 'too-little', based on whether they are eating too much, too little or the exact amount of food, based on the recommended food portion.
+9. Group the dogs by the number of owners they have
+10. Sort the dogs array by recommended food portion in an ascending order. Make sure to NOT mutate the original array!
+
+HINT 1: Use many different tools to solve these challenges, you can use the summary lecture to choose between them 😉
+HINT 2: Being within a range 10% above and below the recommended portion means: current > (recommended * 0.90) && current < (recommended * 1.10). Basically, the current portion should be between 90% and 110% of the recommended portion.
+
+TEST DATA:
+const dogs = [
+  { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
+  { weight: 8, curFood: 200, owners: ['Matilda'] },
+  { weight: 13, curFood: 275, owners: ['Sarah', 'John', 'Leo'] },
+  { weight: 18, curFood: 244, owners: ['Joe'] },
+  { weight: 32, curFood: 340, owners: ['Michael'] },
+];
+
+GOOD LUCK 😀
+*/
+const dogs = [
+  { weight: 22, curFood: 250, owners: ['Alice', 'Bob'] },
+  { weight: 8, curFood: 200, owners: ['Matilda'] },
+  { weight: 13, curFood: 275, owners: ['Sarah', 'John', 'Leo'] },
+  { weight: 18, curFood: 244, owners: ['Joe'] },
+  { weight: 32, curFood: 340, owners: ['Michael'] },
+];
+
+// ---------- Helpers ----------
+const rec = dog => dog.weight ** 0.75 * 28;
+// "Okay" means within 10% above/below the recommended portion
+const isOkay = dog =>
+  dog.curFood > dog.recFood * 0.9 && dog.curFood < dog.recFood * 1.1;
+const isTooMuch = dog => dog.curFood > dog.recFood * 1.1;
+const isTooLittle = dog => dog.curFood < dog.recFood * 0.9;
+
+// 1. Add recommended food portion to each dog (mutating the existing objects; no new array)
+dogs.forEach(dog => {
+  dog.recFood = rec(dog); // not rounding to keep precision; round if you prefer: Math.round(...)
+});
+// 2. Find Sarah's dog and log whether it eats too much or too little (or okay)
+const sarahsDog = dogs.find(dog => dog.owners.includes('Sarah'));
+if (sarahsDog) {
+  const msg = isTooMuch(sarahsDog)
+    ? 'too much'
+    : isTooLittle(sarahsDog)
+    ? 'too little'
+    : 'an okay amount';
+  console.log(`Sarah's dog is eating ${msg}.`);
+}
+
+// 3. Arrays of owners whose dogs eat too much / too little
+const ownersTooMuch = dogs.filter(isTooMuch).flatMap(dog => dog.owners);
+
+const ownersTooLittle = dogs.filter(isTooLittle).flatMap(dog => dog.owners);
+
+// 4. Log strings for those owner arrays
+if (ownersTooMuch.length)
+  console.log(`${ownersTooMuch.join(' and ')}'s dogs eat too much!`);
+else
+  console.log(
+    'No owners have dogs that eat too much based on the 10% threshold.'
+  );
+
+if (ownersTooLittle.length)
+  console.log(`${ownersTooLittle.join(' and ')}'s dogs eat too little!`);
+else
+  console.log(
+    'No owners have dogs that eat too little based on the 10% threshold.'
+  );
+
+// 5. Is there ANY dog eating EXACTLY the recommended amount?
+console.log(dogs.some(dog => dog.curFood === dog.recFood)); // true/false
+
+// 6. Are ALL dogs eating an OKAY amount?
+console.log(dogs.every(isOkay)); // true/false
+
+// 7. Array of dogs that are eating an OKAY amount
+const dogsOkay = dogs.filter(isOkay);
+console.log(dogsOkay);
+
+// 8. Group dogs into 'exact', 'too-much', 'too-little'
+const groupedByEating = dogs.reduce(
+  (acc, dog) => {
+    if (dog.curFood === dog.recFood) acc['exact'].push(dog);
+    else if (isTooMuch(dog)) acc['too-much'].push(dog);
+    else if (isTooLittle(dog)) acc['too-little'].push(dog);
+    // Dogs that are "okay" but not exact are intentionally not placed in any of these 3 buckets
+    return acc;
+  },
+  { exact: [], 'too-much': [], 'too-little': [] }
+);
+console.log(groupedByEating);
+
+// 9. Group dogs by number of owners they have
+const groupedByOwnersCount = dogs.reduce((acc, dog) => {
+  const n = dog.owners.length;
+  (acc[n] ??= []).push(dog);
+  return acc;
+}, {});
+console.log(groupedByOwnersCount);
+
+// 10. Sort dogs by recommended food portion ASC without mutating original
+const dogsByRecAsc = [...dogs].sort((a, b) => a.recFood - b.recFood);
+console.log(dogsByRecAsc);
 
 ///////////////////////////////////////
 // Coding Challenge #4
