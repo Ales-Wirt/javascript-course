@@ -36,8 +36,6 @@ document.addEventListener('keydown', function (e) {
 // Button scrolling
 btnScrollTo.addEventListener('click', e => {
   const s1coords = section1.getBoundingClientRect();
-  console.log(s1coords);
-
   // Old way
   // window.scrollTo({
   //   left: s1coords.left + window.pageXOffset,
@@ -64,8 +62,6 @@ btnScrollTo.addEventListener('click', e => {
 // 2. Determine what element originated the event.
 document.querySelector('.nav__links').addEventListener('click', function (e) {
   e.preventDefault();
-
-  console.log(e.target);
 
   // Matching strategy
   if (e.target.classList.contains('nav__link')) {
@@ -118,7 +114,6 @@ const header = document.querySelector('header');
 const navHeight = nav.getBoundingClientRect().height;
 const stickyNav = function (entries) {
   const [entry] = entries;
-  console.log(entry);
   if (!entry.isIntersecting) nav.classList.add('sticky');
   else nav.classList.remove('sticky');
 };
@@ -235,3 +230,60 @@ tabsContainer.addEventListener('click', e => {
     .querySelector(`.operations__content--${clicked.dataset.tab}`)
     .classList.add('operations__content--active');
 });
+
+// Lazy loading images
+const imgTargets = document.querySelectorAll('img[data-src]');
+const loadImg = function (entries, observer) {
+  const [entry] = entries;
+  if (!entry.isIntersecting) return;
+
+  // Replace src with data-src
+  entry.target.src = entry.target.dataset.src;
+  entry.target.addEventListener('load', () =>
+    entry.target.classList.remove('lazy-img')
+  );
+  observer.unobserve(entry.target);
+};
+const imgObserver = new IntersectionObserver(loadImg, {
+  root: null,
+  threshold: 0,
+  rootMargin: '200px',
+});
+
+imgTargets.forEach(img => imgObserver.observe(img));
+
+// Slider
+const sliders = document.querySelectorAll('.slide');
+const slider = document.querySelector('.slider');
+const btnLeft = document.querySelector('.slider__btn--left');
+const btnRight = document.querySelector('.slider__btn--right');
+const maxSlideIndex = sliders.length - 1;
+
+let currentSlideIndex = 0;
+
+slider.style.transform = 'scale(0.2)';
+slider.style.overflow = 'visible';
+
+const goToSlide = function (slideIndex) {
+  sliders.forEach(
+    (slide, i) =>
+      (slide.style.transform = `translateX(${100 * (i - currentSlide)}%)`)
+  );
+};
+
+goToSlide(0);
+
+// Next slide
+const nextSlide = () => {
+  if (currentSlideIndex === maxSlideIndex) currentSlide = 0;
+  else currentSlideIndex++;
+
+  goToSlide(currentSlideIndex);
+};
+const previousSlide = () => {
+  if (currentSlideIndex === 0) currentSlideIndex = maxSlideIndex;
+  else currentSlideIndex--;
+  goToSlide(currentSlideIndex);
+};
+btnRight.addEventListener('click', nextSlide);
+btnLeft.addEventListener('click');
