@@ -260,40 +260,67 @@ PART 2
 //   })
 //   .then(() => console.log('I waited for 1 seond'));
 
+// const getPosition = function () {
+//   return new Promise(function (resolve, reject) {
+//     navigator.geolocation.getCurrentPosition(resolve, reject);
+//   });
+// };
+
+// getPosition().then(pos => console.log(pos));
+
+// const whereAmI = () => {
+//   getPosition()
+//     .then(pos => {
+//       const { latitude: lat, longitude: lng } = pos.coords;
+
+//       return fetch(
+//         `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+//       );
+//     })
+//     .then(res => {
+//       if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
+
+//       return res.json();
+//     })
+//     .then(data => {
+//       console.log(data);
+//       console.log(`You are in ${data.city}, ${data.countryName}`);
+
+//       return fetch(`https://restcountries.com/v2/name/${data.countryName}`);
+//     })
+//     .then(res => {
+//       if (!res.ok) throw new Error(`Country not found ${res.status}`);
+
+//       return res.json();
+//     })
+//     .then(data => renderCountry(data[0]))
+//     .catch(err => console.error(`${err.message}💥💥💥`));
+// };
+// btn.addEventListener('click', whereAmI);
+
 const getPosition = function () {
   return new Promise(function (resolve, reject) {
     navigator.geolocation.getCurrentPosition(resolve, reject);
   });
 };
 
-getPosition().then(pos => console.log(pos));
+const whereAmI = async function (country) {
+  const pos = await getPosition();
 
-const whereAmI = () => {
-  getPosition()
-    .then(pos => {
-      const { latitude: lat, longitude: lng } = pos.coords;
+  const { latitude: lat, longitude: lng } = pos.coords;
 
-      return fetch(
-        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
-      );
-    })
-    .then(res => {
-      if (!res.ok) throw new Error(`Problem with geocoding ${res.status}`);
+  const responseGeo = await fetch(
+    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+  );
+  const dataGeo = await responseGeo.json();
+  console.log(dataGeo);
+  const response = await fetch(
+    `https://restcountries.com/v2/name/${dataGeo.countryName}`
+  );
 
-      return res.json();
-    })
-    .then(data => {
-      console.log(data);
-      console.log(`You are in ${data.city}, ${data.countryName}`);
+  const data = await response.json();
 
-      return fetch(`https://restcountries.com/v2/name/${data.countryName}`);
-    })
-    .then(res => {
-      if (!res.ok) throw new Error(`Country not found ${res.status}`);
-
-      return res.json();
-    })
-    .then(data => renderCountry(data[0]))
-    .catch(err => console.error(`${err.message}💥💥💥`));
+  renderCountry(data[0]);
 };
-btn.addEventListener('click', whereAmI);
+whereAmI('portugal');
+console.log('FIRST');
