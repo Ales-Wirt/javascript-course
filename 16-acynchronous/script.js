@@ -304,23 +304,55 @@ const getPosition = function () {
   });
 };
 
-const whereAmI = async function (country) {
-  const pos = await getPosition();
+const whereAmI = async function () {
+  try {
+    const pos = await getPosition();
 
-  const { latitude: lat, longitude: lng } = pos.coords;
+    const { latitude: lat, longitude: lng } = pos.coords;
 
-  const responseGeo = await fetch(
-    `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
-  );
-  const dataGeo = await responseGeo.json();
-  console.log(dataGeo);
-  const response = await fetch(
-    `https://restcountries.com/v2/name/${dataGeo.countryName}`
-  );
+    const responseGeo = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+    );
 
-  const data = await response.json();
+    if (!responseGeo.ok) throw new Error(`Problem getting location data.`);
 
-  renderCountry(data[0]);
+    const dataGeo = await responseGeo.json();
+    const response = await fetch(
+      `https://restcountries.com/v2/name/${dataGeo.countryName}asd`
+    );
+
+    if (!response.ok) throw new Error(`Problem getting location data.`);
+
+    const data = await response.json();
+
+    renderCountry(data[0]);
+
+    return `You are in ${dataGeo.city}, ${dataGeo.countryName}`;
+  } catch (err) {
+    console.error(err);
+    renderCountry(`Something went wrong 💥 ${err.message}`);
+
+    // Reject promise returned from async function
+    throw err;
+  }
 };
-whereAmI('portugal');
-console.log('FIRST');
+
+// console.log('1: Will get location');
+// const locationInfo = whereAmI();
+// console.log(locationInfo);
+// whereAmI()
+//   .then(info => console.log(`2: ${info}`))
+//   .catch(err => console.error(`${err.message} 💥💥💥`))
+//   .finally(() => console.log('3: Finished getting location'));
+
+(async function () {
+  try {
+    console.log('1: Will get location');
+    const location = await whereAmI();
+    console.log(`2: ${location}`);
+  } catch (err) {
+    console.error(`2: ${err.message} 💥💥💥`);
+  } finally {
+    console.log('3: Finished getting location');
+  }
+})();
